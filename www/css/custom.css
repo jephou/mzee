@@ -5,8 +5,8 @@ html>body{background:#fff; margin:0}
 .header table .td:hover{background:#548ac4;cursor:pointer; color:#fff;text-shadow:none}
 .header table .active {background:#548ac4;cursor:pointer; color:#fff;text-shadow:none}
 
-.footer{ border-top: 1px solid #ddd; background:#fff; height:50px;}
+.footer{ border-top: 1px solid #ddd; background:#ddd; height:50px;}
 .footer table{width:100%;text-align:center; border:none; padding:0;}
 .footer table .td{height:50px;font-weight:bold;text-shadow:none}
-.footer table .td:hover{background:#548ac4;cursor:pointer; color:#fff;text-shadow:none}
-.footer table .active {background:#548ac4;cursor:pointer; color:#fff;text-shadow:none}
+.footer table .td:hover{background:#ccc;cursor:pointer; color:#fff;text-shadow:none}
+.footer table .active {background:#ccc;cursor:pointer; color:#fff;text-shadow:none}

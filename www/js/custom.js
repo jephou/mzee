@@ -1,7 +1,6 @@
 
 $(document).ready(function(){
 
-
 $(".td").click(function(){
 	
 	var id = $(this).siblings(".active").attr("id");
@@ -10,7 +9,10 @@ $(".td").click(function(){
 		return false;
 		}
 	$("#"+id).removeClass("active");
+	
 	$(this).addClass("active");
+	
+	alert(id);
 	});
 	
 });
