@@ -1,4 +1,4 @@
-html>body{background:#fff;}
+html>body{background:#fff; margin:0}
 .header{ border-bottom: 1px solid #ddd; background:#fff; height:50px;}
 .header table{width:100%;text-align:center; border:none; padding:0;}
 .header table .td{width: 33.333%;height:50px;font-weight:bold;text-shadow:none}
