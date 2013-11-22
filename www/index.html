@@ -11,30 +11,169 @@
 <script type="text/javascript" src="js/jquery.jplayer.min.js"></script>
 <script type="text/javascript">
 //<![CDATA[
-$(document).ready(function(){
+var jPlayerAndroidFix = (function($) {
+	var fix = function(id, media, options) {
+		this.playFix = false;
+		this.init(id, media, options);
+	};
+	fix.prototype = {
+		init: function(id, media, options) {
+			var self = this;
 
-	$("#jquery_jplayer_1").jPlayer({
-		ready: function () {
-			$(this).jPlayer("setMedia", {
-				mp3: "http://r.jephou.rw/hjwxf36f52289af8e/777ebc0537a216ce7f95a0b6b6a5497b/3fb0c2d643d9a51c0756f65db2389647/8660236343a3e0908f7d0ea41587d2a4jephou.mp3"
+			// Store the params
+			this.id = id;
+			this.media = media;
+			this.options = options;
+
+			// Make a jQuery selector of the id, for use by the jPlayer instance.
+			this.player = $(this.id);
+
+			// Make the ready event to set the media to initiate.
+			this.player.bind($.jPlayer.event.ready, function(event) {
+				// Use this fix's setMedia() method.
+				self.setMedia(self.media);
 			});
+
+			// Apply Android fixes
+			if($.jPlayer.platform.android) {
+
+				// Fix playing new media immediately after setMedia.
+				this.player.bind($.jPlayer.event.progress, function(event) {
+					if(self.playFixRequired) {
+						self.playFixRequired = false;
+
+						// Enable the contols again
+						// self.player.jPlayer('option', 'cssSelectorAncestor', self.cssSelectorAncestor);
+
+						// Play if required, otherwise it will wait for the normal GUI input.
+						if(self.playFix) {
+							self.playFix = false;
+							$(this).jPlayer("play");
+						}
+					}
+				});
+				// Fix missing ended events.
+				this.player.bind($.jPlayer.event.ended, function(event) {
+					if(self.endedFix) {
+						self.endedFix = false;
+						setTimeout(function() {
+							self.setMedia(self.media);
+						},0);
+						// what if it was looping?
+					}
+				});
+				this.player.bind($.jPlayer.event.pause, function(event) {
+					if(self.endedFix) {
+						var remaining = event.jPlayer.status.duration - event.jPlayer.status.currentTime;
+						if(event.jPlayer.status.currentTime === 0 || remaining < 1) {
+							// Trigger the ended event from inside jplayer instance.
+							setTimeout(function() {
+								self.jPlayer._trigger($.jPlayer.event.ended);
+							},0);
+						}
+					}
+				});
+			}
+
+			// Instance jPlayer
+			this.player.jPlayer(this.options);
+
+			// Store a local copy of the jPlayer instance's object
+			this.jPlayer = this.player.data('jPlayer');
+
+			// Store the real cssSelectorAncestor being used.
+			this.cssSelectorAncestor = this.player.jPlayer('option', 'cssSelectorAncestor');
+
+			// Apply Android fixes
+			this.resetAndroid();
+
+			return this;
 		},
-		play: function() { // To avoid multiple jPlayers playing together.
-			$(this).jPlayer("pauseOthers");
+		setMedia: function(media) {
+			this.media = media;
+
+			// Apply Android fixes
+			this.resetAndroid();
+
+			// Set the media
+			this.player.jPlayer("setMedia", this.media);
+			return this;
 		},
+		play: function() {
+			// Apply Android fixes
+			if($.jPlayer.platform.android && this.playFixRequired) {
+				// Apply Android play fix, if it is required.
+				this.playFix = true;
+			} else {
+				// Other browsers play it, as does Android if the fix is no longer required.
+				this.player.jPlayer("play");
+			}
+		},
+		resetAndroid: function() {
+			// Apply Android fixes
+			if($.jPlayer.platform.android) {
+				this.playFix = false;
+				this.playFixRequired = true;
+				this.endedFix = true;
+				// Disable the controls
+				// this.player.jPlayer('option', 'cssSelectorAncestor', '#NeverFoundDisabled');
+			}
+		}
+	};
+	return fix;
+})(jQuery);
+
+$(document).ready(function() {
+
+	var id = "#jquery_jplayer_1";
+
+	var bubble = {
+		mp3:"http://r.jephou.rw/hjwxf36f52289af8e/6cd2b87f033df1fb7ecbbe7aa0388c9b/6cd2b87f033df1fb7ecbbe7aa0388c9b/c6a24a768f6a0b1e9d0ea573fcae833ejephou.mp3"};
+	var lismore = {
+		mp3:"http://www.jplayer.org/audio/mp3/Miaow-04-Lismore.mp3"
+	};
+
+	var options = {
 		swfPath: "js",
 		supplied: "mp3",
 		wmode: "window",
 		smoothPlayBar: true,
 		keyEnabled: true
+	};
+
+	var myAndroidFix = new jPlayerAndroidFix(id, bubble, options);
+
+	$('#setMedia-Bubble').click(function() {
+		myAndroidFix.setMedia(bubble);
+		$('.jp-title ul li').text('Bubble');
+	});
+	$('#setMedia-Bubble-play').click(function() {
+		myAndroidFix.setMedia(bubble).play();
+		$('.jp-title ul li').text('Bubble');
 	});
 
-	
+	$('#setMedia-Lismore').click(function() {
+		myAndroidFix.setMedia(lismore);
+		$('.jp-title ul li').text('Lismore');
+	});
+	$('#setMedia-Lismore-play').click(function() {
+		myAndroidFix.setMedia(lismore).play();
+		$('.jp-title ul li').text('Lismore');
+	});
+
+
+	$("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer_1")});
 });
 //]]>
 </script>
+
 </head>
 <body>
+<div id="container">
+
+	
+
+
 
 		<div id="jquery_jplayer_1" class="jp-jplayer"></div>
 
@@ -52,24 +191,22 @@ $(document).ready(function(){
 					<div class="jp-progress">
 						<div class="jp-seek-bar">
 							<div class="jp-play-bar"></div>
+
 						</div>
 					</div>
 					<div class="jp-volume-bar">
 						<div class="jp-volume-bar-value"></div>
 					</div>
-					<div class="jp-time-holder">
-						<div class="jp-current-time"></div>
-						<div class="jp-duration"></div>
-
-						<ul class="jp-toggles">
-							<li><a href="javascript:;" class="jp-repeat" tabindex="1" title="repeat">repeat</a></li>
-							<li><a href="javascript:;" class="jp-repeat-off" tabindex="1" title="repeat off">repeat off</a></li>
-						</ul>
-					</div>
+					<div class="jp-current-time"></div>
+					<div class="jp-duration"></div>
+					<ul class="jp-toggles">
+						<li><a href="javascript:;" class="jp-repeat" tabindex="1" title="repeat">repeat</a></li>
+						<li><a href="javascript:;" class="jp-repeat-off" tabindex="1" title="repeat off">repeat off</a></li>
+					</ul>
 				</div>
 				<div class="jp-title">
 					<ul>
-						<li>Stirring of a fool</li>
+						<li>Bubble</li>
 					</ul>
 				</div>
 				<div class="jp-no-solution">
@@ -79,8 +216,4 @@ $(document).ready(function(){
 			</div>
 		</div>
 
-		
-</body>
-
 </html>
-
