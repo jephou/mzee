@@ -1,219 +1,149 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset=utf-8 />
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html class="ui-mobile" xmlns="http://www.w3.org/1999/xhtml"><head profile="http://gmpg.org/xfn/11">
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 
-<!-- Website Design By: www.happyworm.com -->
-<title>Demo : Multi instanced jPlayer audio players</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link href="skin/blue.monday/jplayer.blue.monday.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="js/jquery.js"></script>
-<script type="text/javascript" src="js/jquery.jplayer.min.js"></script>
-<script type="text/javascript">
-//<![CDATA[
-var jPlayerAndroidFix = (function($) {
-	var fix = function(id, media, options) {
-		this.playFix = false;
-		this.init(id, media, options);
-	};
-	fix.prototype = {
-		init: function(id, media, options) {
-			var self = this;
-
-			// Store the params
-			this.id = id;
-			this.media = media;
-			this.options = options;
-
-			// Make a jQuery selector of the id, for use by the jPlayer instance.
-			this.player = $(this.id);
-
-			// Make the ready event to set the media to initiate.
-			this.player.bind($.jPlayer.event.ready, function(event) {
-				// Use this fix's setMedia() method.
-				self.setMedia(self.media);
-			});
-
-			// Apply Android fixes
-			if($.jPlayer.platform.android) {
-
-				// Fix playing new media immediately after setMedia.
-				this.player.bind($.jPlayer.event.progress, function(event) {
-					if(self.playFixRequired) {
-						self.playFixRequired = false;
-
-						// Enable the contols again
-						// self.player.jPlayer('option', 'cssSelectorAncestor', self.cssSelectorAncestor);
-
-						// Play if required, otherwise it will wait for the normal GUI input.
-						if(self.playFix) {
-							self.playFix = false;
-							$(this).jPlayer("play");
-						}
-					}
-				});
-				// Fix missing ended events.
-				this.player.bind($.jPlayer.event.ended, function(event) {
-					if(self.endedFix) {
-						self.endedFix = false;
-						setTimeout(function() {
-							self.setMedia(self.media);
-						},0);
-						// what if it was looping?
-					}
-				});
-				this.player.bind($.jPlayer.event.pause, function(event) {
-					if(self.endedFix) {
-						var remaining = event.jPlayer.status.duration - event.jPlayer.status.currentTime;
-						if(event.jPlayer.status.currentTime === 0 || remaining < 1) {
-							// Trigger the ended event from inside jplayer instance.
-							setTimeout(function() {
-								self.jPlayer._trigger($.jPlayer.event.ended);
-							},0);
-						}
-					}
-				});
-			}
-
-			// Instance jPlayer
-			this.player.jPlayer(this.options);
-
-			// Store a local copy of the jPlayer instance's object
-			this.jPlayer = this.player.data('jPlayer');
-
-			// Store the real cssSelectorAncestor being used.
-			this.cssSelectorAncestor = this.player.jPlayer('option', 'cssSelectorAncestor');
-
-			// Apply Android fixes
-			this.resetAndroid();
-
-			return this;
-		},
-		setMedia: function(media) {
-			this.media = media;
-
-			// Apply Android fixes
-			this.resetAndroid();
-
-			// Set the media
-			this.player.jPlayer("setMedia", this.media);
-			return this;
-		},
-		play: function() {
-			// Apply Android fixes
-			if($.jPlayer.platform.android && this.playFixRequired) {
-				// Apply Android play fix, if it is required.
-				this.playFix = true;
-			} else {
-				// Other browsers play it, as does Android if the fix is no longer required.
-				this.player.jPlayer("play");
-			}
-		},
-		resetAndroid: function() {
-			// Apply Android fixes
-			if($.jPlayer.platform.android) {
-				this.playFix = false;
-				this.playFixRequired = true;
-				this.endedFix = true;
-				// Disable the controls
-				// this.player.jPlayer('option', 'cssSelectorAncestor', '#NeverFoundDisabled');
-			}
-		}
-	};
-	return fix;
-})(jQuery);
-
-$(document).ready(function() {
-
-	var id = "#jquery_jplayer_1";
-
-	var bubble = {
-		mp3:"http://r.jephou.rw/hjwxf36f52289af8e/6cd2b87f033df1fb7ecbbe7aa0388c9b/6cd2b87f033df1fb7ecbbe7aa0388c9b/c6a24a768f6a0b1e9d0ea573fcae833ejephou.mp3"};
-	var lismore = {
-		mp3:"http://www.jplayer.org/audio/mp3/Miaow-04-Lismore.mp3"
-	};
-
-	var options = {
-		swfPath: "js",
-		supplied: "mp3",
-		wmode: "window",
-		smoothPlayBar: true,
-		keyEnabled: true
-	};
-
-	var myAndroidFix = new jPlayerAndroidFix(id, bubble, options);
-
-	$('#setMedia-Bubble').click(function() {
-		myAndroidFix.setMedia(bubble);
-		$('.jp-title ul li').text('hei');
-	});
-	$('#setMedia-Bubble-play').click(function() {
-		myAndroidFix.setMedia(bubble).play();
-		$('.jp-title ul li').text('hei');
-	});
-
-	$('#setMedia-Lismore').click(function() {
-		myAndroidFix.setMedia(lismore);
-		$('.jp-title ul li').text('Lismore');
-	});
-	$('#setMedia-Lismore-play').click(function() {
-		myAndroidFix.setMedia(lismore).play();
-		$('.jp-title ul li').text('Lismore');
-	});
-
-
-	$("#jplayer_inspector").jPlayerInspector({jPlayer:$("#jquery_jplayer_1")});
-});
-//]]>
+<script>
+			//var remote = 'http://localhost/mobileJephou/mobileSite/remote_server/';
+			var remote = 'http://jf.jephou.rw/';
+			var web = '';
+			var ajax_url_for_player = remote + "ajax.php?w=two&p=";
+			var hashs = window.location.hash;
+				hashs = hashs.replace(/^.*?#!/,'');
+            var hash = hashs.split('&');
+			
 </script>
 
-</head>
-<body>
-<div id="container">
-
+<link rel="stylesheet" href="css/jquerymob.css">
+<link rel="stylesheet" href="css/custom.css">
+            <link rel="stylesheet" href="css/style.css" type="text/css" media="screen" charset="utf-8">
+			<script src="js/jquery-1.8.2.js"></script>
+			<script src="js/jquery-mobile.js"></script>
+            <script src="js/custom.js"></script>
 	
+	<script src="lib/soundmanager2-nodebug-jsmin.js" type="text/javascript" charset="utf-8"></script>
+
+    <script src="js/sc-player.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/sc-player-waveform.js" type="text/javascript" charset="utf-8"></script>			
+			
+<script>			
+			
+$(document).on("pageinit", function(){
+	var serviceURL = remote+"ajax.php";	
+	var getNumber = function() {
+	return $.ajax({
+				type: "post",
+				beforeSend: function() { $.mobile.loading( 'show' ) }, //Show spinner
+				complete: function() { $.mobile.loading( 'hide' ) }, //Hide spinner
+				async: "true",
+				dataType: 'json',
+				url: serviceURL,
+				data: { listomatic: $.mobile.listomatic.prototype.getResults() },
+				success: function(data) { 
+					if (data && data.playlists) {
+						var list = '';
+						$.each(data.playlists, function(index, value) {
+							list +='<li data-theme="c">' +						
+							'<a href="#" class="plythis" id="'+value.code+'" data-icon="false" rel="external" style="text-transform: capitalize" class="go-next"><span>'+value.name+'</span><span id="sp">'+value.type+' ('+ value.number+')</span></a></li>';
+						}); // end each	
+						$('#listview').append(list).listview("refresh");
+					} // end if
+				} // end success
+			}); // end ajax
+	}
+	$.extend($.mobile.listomatic.prototype.options, {perPage: 20, 
+													btnLabel: 'Show Me More', 
+													refreshContent: 'daily',
+													noResultsFound: 'No Results Found'
+													});
+	$.mobile.listomatic.prototype.registerAjaxCall(getNumber);
+	
+// for click events
+/*
+    var menuOpen;
+    // Menu
+    $('#menu-trigger').on('click', function(e){
+        e.preventDefault();		
+        if(menuOpen != true) {
+            $('.ui-page-active').animate({
+                'margin-left': '390px'
+            }, 300, function(){
+                menuOpen = true
+            });
+            return false;
+        } else {
+            $('.ui-page-active').animate({'margin-left': 0}, 300, function(){menuOpen = false});
+            return false;
+        }
+    });*/
+	
+ $('.go-next').on('click', function(e){
+        e.preventDefault();
+		window.location.href = $(this).attr('href');
+ });
+	
+});
+
+</script>
+
+<script type="text/javascript" src="js/jquery_listomatic.js"></script>
+
+
+</head>
+<body leftmargin="0" topmargin="0" class="home page page-id-2 page-template-default gecko">
+
+
+<div data-role="page" id="page1">
+	<div data-role="header" data-position="fixed" data-theme="f" data-tap-toggle="false" class="header" id="header">
+	<table cellpadding="0" cellspacing="0"><tr>
+    	<td class="td" id="indirimbo">Indirimbo</td>
+        <td class="td" id="abahanzi">Abahanzi</td>
+        <td class="td" id="shakisha">Shakisha</td>
+    </tr></table>
+	</div>
+
+<div data-role="content">
+<div id="home">
+<ul data-role="listview" data-divider-theme="b" data-inset="true" id="listview" data-filter="true" data-filter-placeholder="Shaka indirimbo, umuhanzi, playlist..." data-listomatic="true">
+            <li data-role="list-divider" role="heading">
+                Playlists
+            </li>                       
+            <li data-iconpos="right" data-wrapperels="div" data-iconshadow="true" data-shadow="false" data-corners="false" class="listomatic ui-btn ui-btn-icon-right ui-li ui-last-child ui-btn-up-c" data-theme="c" data-icon="false"><div class="ui-btn-inner ui-li">
+<div class="ui-btn-text"><a class="ui-link-inherit" style="height: 10px; font-size:1.5em;; text-align:center;" href="#" data-role="button">Show Me More</a></div></div></li>
+        </ul>
+	</div>
+</div>
+ 
+<!-- Two -->
+
+<ol class="rectangle-list" id="playlist"></ol>
+<div id="pl" style="display:none"></div>
 
 
 
-		<div id="jquery_jplayer_1" class="jp-jplayer"></div>
 
-		<div id="jp_container_1" class="jp-audio">
-			<div class="jp-type-single">
-				<div class="jp-gui jp-interface">
-					<ul class="jp-controls">
-						<li><a href="javascript:;" class="jp-play" tabindex="1">play</a></li>
-						<li><a href="javascript:;" class="jp-pause" tabindex="1">pause</a></li>
-						<li><a href="javascript:;" class="jp-stop" tabindex="1">stop</a></li>
-						<li><a href="javascript:;" class="jp-mute" tabindex="1" title="mute">mute</a></li>
-						<li><a href="javascript:;" class="jp-unmute" tabindex="1" title="unmute">unmute</a></li>
-						<li><a href="javascript:;" class="jp-volume-max" tabindex="1" title="max volume">max volume</a></li>
-					</ul>
-					<div class="jp-progress">
-						<div class="jp-seek-bar">
-							<div class="jp-play-bar"></div>
+<!--  end two -->    
 
-						</div>
-					</div>
-					<div class="jp-volume-bar">
-						<div class="jp-volume-bar-value"></div>
-					</div>
-					<div class="jp-current-time"></div>
-					<div class="jp-duration"></div>
-					<ul class="jp-toggles">
-						<li><a href="javascript:;" class="jp-repeat" tabindex="1" title="repeat">repeat</a></li>
-						<li><a href="javascript:;" class="jp-repeat-off" tabindex="1" title="repeat off">repeat off</a></li>
-					</ul>
-				</div>
-				<div class="jp-title">
-					<ul>
-						<li>Bubble</li>
-					</ul>
-				</div>
-				<div class="jp-no-solution">
-					<span>Update Required</span>
-					To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
-				</div>
-			</div>
+	<div data-role="footer" data-theme="a" data-position="fixed" data-tap-toggle="false" class="footer">
+  	<table cellpadding="0" cellspacing="0"><tr>
+    	<td class="td" id="dtl">r</td>
+        <td class="td" id="lrcs">e</td>
+        <td class="td" id="plylist">e</td>
+        <td class="td" id="player">  <div class="d-player">
+	<div id="player">
+		<div class="controls">
+        	<div class="prev"></div>
+			<div class="play"></div>
+			<div class="next"></div>
 		</div>
+		
+		<div id="waveform">
+			<div class="buffer"></div>
+			<div class="played"></div>
+			<img />
+		</div>
+	</div>
+  </div></td>
+    </tr></table>
+</div></div>
 
-</html>
+</body></html>
